@@ -75,9 +75,11 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'koneksi',
-	'password' => 'mataSerius17001$',
+	'hostname' => '127.0.0.1',
+    'username' => 'root',
+	'password' => 'qlue12345',
+#	'username' => 'koneksi',
+#	'password' => 'mataSerius17001$',
 	'database' => 'dev_form',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
