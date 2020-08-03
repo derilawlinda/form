@@ -356,7 +356,7 @@ public function index(){
     $table .= "<tr>";
     $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;'> <strong> Nama </strong> </td>";
     $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;'> <strong> Klasifikasi </strong>  </td>";
-    $table .= "<td style='background-color:gainsboro;text-align:center' colspan=".$lastDayThisMonth."><strong>".$bulanArray[$bulanNumber]." ".$tahun."</strong></td>";
+    $table .= "<td data-a-h='center' style='background-color:gainsboro;text-align:center' colspan=".$lastDayThisMonth."><strong>".$bulanArray[$bulanNumber]." ".$tahun."</strong></td>";
     $table .= "</tr>";
     $table .= "<tr>";
     for ($x = 1; $x <= $lastDayThisMonth; $x++) {

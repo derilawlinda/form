@@ -7,7 +7,13 @@
 
             <div class="table-responsive">  
                 <table class="table table-borderless" id="tableSchedule">
-                   
+                    <thead>
+                    <tr>
+                            <th>Status</th>
+                            <th>Tanggal Mulai</th>
+                            <th>Tanggal Selesai</th>
+                        </tr>
+                    </thead>
                     <?php if(count($project_schedules)) : 
                         $i=0;
                         foreach ($project_schedules as $project_schedule) {
