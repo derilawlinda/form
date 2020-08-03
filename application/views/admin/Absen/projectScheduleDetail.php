@@ -32,7 +32,7 @@
                             <td><input type="date" name="statusStartDate" class="form-control status-list" required="" value="<?php echo($project_schedule['start_date']) ?>" /></td> 
                             <td><input type="date" name="statusEndDate" class="form-control status-list" required="" value="<?php echo($project_schedule['end_date']) ?>" /></td> 
                             <?php if($i==0) : ?>
-                                <td><button type="button" name="add" id="add" class="btn btn-success">Add More</button></td>  
+                                <td><button type="button" name="add" id="add" class="btn btn-success">Tambah Schedule</button></td>  
                             <?php else : ?>
                                 <td><button type="button" name="remove" id="<?php echo($i) ?>" class="btn btn-danger btn_remove">X</button></td>
                             <?php endif ?>
@@ -59,7 +59,7 @@
                             </td>  
                             <td><input type="date" name="statusStartDate" class="form-control status-list" required="" /></td> 
                             <td><input type="date" name="statusEndDate" class="form-control status-list" required="" /></td> 
-                            <td><button type="button" name="add" id="add" class="btn btn-success">Add More</button></td>  
+                            <td><button type="button" name="add" id="add" class="btn btn-success">Tambah Schedule</button></td>  
                         </tr>  
                     <?php endif; ?>
                     

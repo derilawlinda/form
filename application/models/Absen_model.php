@@ -319,7 +319,7 @@ class Absen_model extends CI_Model {
  public function getPegawaiAndKlasifikasiByProjectNickName($projectNickName)
  {
     $pegawais = array();
-    $query = $this->db->select('nama_pekerja,jabatan,tgl_masuk,roster')
+    $query = $this->db->select('no_pekerja,nama_pekerja,jabatan,tgl_masuk,roster')
                 ->from('pekerja')
                 ->where('project_nickname',$projectNickName)
                 ->get(); 
@@ -331,19 +331,15 @@ class Absen_model extends CI_Model {
     return $pegawais;
  }
 
- public function getCountAbsenByNameAndTanggal($namaPegawai, $tanggal)
+ public function getCountAbsenByNoPekAndTanggal($no_pekerja, $tanggal)
  {
-    $pegawais = array();
-    $query = $this->db->select('nama_pekerja,jabatan,tgl_masuk,roster')
-                ->from('pekerja')
-                ->where('project_nickname',$projectNickName)
-                ->get(); 
-    if ($query->num_rows() > 0) {
-        foreach ($query->result_array() as $row) {
-            $pegawais[] = $row;
-        }
-    }
-    return $pegawais;
+    $result = $this->db->select('id')
+                ->from('absen')
+                ->where('no_pekerja',$no_pekerja)
+                ->where('date(created_at)',$tanggal)
+                ->get()->num_rows(); 
+    
+    return $result;
  }
  public function deleteLokasi($id)
  {

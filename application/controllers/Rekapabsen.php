@@ -332,6 +332,16 @@ public function index(){
 
   public function generateAbsensiTable(){
 
+    
+    $RGB["OFJ"] = "996600";
+    $RGB["ORC"] = "29B150";
+    $RGB["ORT"] = "92D04F";
+    $RGB["ORT"] = "1470C0";
+    $RGB["MTR"] = "FFFF01";
+    $RGB["MTR"] = "7030A0";
+    $RGB["CT"] = "F900FF";
+    $RGB["IZ"] = "A6A6A6";
+     
     $projectNickName = $this->input->get('project');
     $bulanNumber = $this->input->get('bulanNumber');
     $tahun = $this->input->get('tahun');
@@ -339,7 +349,9 @@ public function index(){
     $pegawais = $this->Absen_model->getPegawaiAndKlasifikasiByProjectNickName($projectNickName);
     $lastDayThisMonth = $this->getNumberOfDaysInMonth($bulanNumber+1,$tahun);
 
-
+    $projectStatuses = $this->Projectschedule_model->getProjectStatusByMonthYearAndProjectNickName($bulanNumber+1,$tahun,$projectNickName);
+    
+    // echo($this->Absen_model->getCountAbsenByNoPekAndTanggal('200273','2020-07-11'));
     $table = "<table border='1' class='table table-bordered table-responsive statistics' id='tabelAbsensi'>";
     $table .= "<tr>";
     $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;'> <strong> Nama </strong> </td>";
@@ -347,8 +359,8 @@ public function index(){
     $table .= "<td style='background-color:gainsboro;text-align:center' colspan=".$lastDayThisMonth."><strong>".$bulanArray[$bulanNumber]." ".$tahun."</strong></td>";
     $table .= "</tr>";
     $table .= "<tr>";
-    for ($x = 0; $x < $lastDayThisMonth; $x++) {
-      $table .= "<td>".($x+1)."</td>";
+    for ($x = 1; $x <= $lastDayThisMonth; $x++) {
+      $table .= "<td>".($x)."</td>";
     }
     $table .= "</tr>";
 
@@ -358,29 +370,67 @@ public function index(){
         $table .= "<td>".$pegawai["nama_pekerja"]."</td>";
         $table .= "<td>".$pegawai["jabatan"]."</td>";
         
-        for ($x = 0; $x < $lastDayThisMonth; $x++) {
-          $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$tahun."-".$bulanNumber."-".($x+1),'%a');
+        for ($x = 1; $x <= $lastDayThisMonth; $x++) {
+          $cell = "<td data-fill-color='FFFFFFFF' style='background-color:white;'>NA</td>";
+          $thisDate = $tahun."-".($bulanNumber+1)."-".($x);
+          $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$thisDate,'%a');
           if ( $pegawai["roster"] == 21 ){
             if(($numOfWeekWorking - 2) % 3 == 0){
-
               $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+
             }else{
-              $table .= "<td style='background-color:green;'>HDR</td>";
+              foreach($projectStatuses as $projectStatus){
+                if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                  $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                }
+              }
+              $table .= $cell;
+
             }
             
           }elseif($pegawai["roster"] == 42){
             
             if($numOfWeekWorking&1){
               if(($numOfWeekWorking - 5) % 6 == 0){
-                $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+                if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                  foreach($projectStatuses as $projectStatus){
+                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                      $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                    }
+                  }
+                  $table .= $cell;
+                  
+                }else{                
+                  $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+                }
               }else{
-                $table .= "<td style='background-color:green;'>HDR</td>";
+                  foreach($projectStatuses as $projectStatus){
+                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                      $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                    }
+                  }
+                  $table .= $cell;
               }
             }else{
               if(($numOfWeekWorking - 4) % 6 == 0){
-                $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+                if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                  foreach($projectStatuses as $projectStatus){
+                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                      $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                    }
+                  }
+                  $table .= $cell;
+                  
+                }else{                
+                  $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+                }
               }else{
-                $table .= "<td style='background-color:green;'>HDR</td>";
+                  foreach($projectStatuses as $projectStatus){
+                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                      $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                    }
+                  }
+                  $table .= $cell;
               }
             }
           }
@@ -407,7 +457,7 @@ public function index(){
     
       $interval = date_diff($datetime1, $datetime2);
     
-      return floor($interval->format($differenceFormat)/7);
+      return floor(($interval->format($differenceFormat))/7);
       //return $datetime2->format('Y-m-d H:i:s');
     
   }

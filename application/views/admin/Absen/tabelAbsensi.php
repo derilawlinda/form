@@ -62,8 +62,8 @@
 
                     <div class="row">
                         <div class="col-sm-12">
-                            <button id="download"  class="btn btn-primary float-md-right mr-3">Download Excel</button> 
-                            <button id="submit" type="submit" class="btn btn-primary float-md-right" disabled>Submit</button> 
+                            <button id="download"  class="btn btn-primary float-md-right mr-3" disabled>Download Excel</button> 
+                            <button id="submit" type="submit" class="btn btn-primary float-md-right mr-3" disabled>Submit</button> 
                         </div>                 
                     </div>                
                 
@@ -120,6 +120,7 @@
                     },
                     function(data, status){
                         $("#table").html(data);
+                        $("#download").prop("disabled", false);
                     });
                 });
 
