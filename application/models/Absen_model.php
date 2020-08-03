@@ -300,6 +300,51 @@ class Absen_model extends CI_Model {
     $query = $this->db->get_where('lokasi', array('projectlokasi.projectadmin' => $admin))->result();
    return $query;
  }
+
+ public function getDistinctProjectNickNames()
+ {
+    $projects = array();
+    $query = $this->db->select('project_nickname')
+                ->distinct('project_nickname')
+                ->from('pekerja')
+                ->get(); 
+    if ($query->num_rows() > 0) {
+        foreach ($query->result_array() as $row) {
+            $projects[] = $row;
+        }
+    }
+    return $projects;
+ }
+
+ public function getPegawaiAndKlasifikasiByProjectNickName($projectNickName)
+ {
+    $pegawais = array();
+    $query = $this->db->select('nama_pekerja,jabatan,tgl_masuk,roster')
+                ->from('pekerja')
+                ->where('project_nickname',$projectNickName)
+                ->get(); 
+    if ($query->num_rows() > 0) {
+        foreach ($query->result_array() as $row) {
+            $pegawais[] = $row;
+        }
+    }
+    return $pegawais;
+ }
+
+ public function getCountAbsenByNameAndTanggal($namaPegawai, $tanggal)
+ {
+    $pegawais = array();
+    $query = $this->db->select('nama_pekerja,jabatan,tgl_masuk,roster')
+                ->from('pekerja')
+                ->where('project_nickname',$projectNickName)
+                ->get(); 
+    if ($query->num_rows() > 0) {
+        foreach ($query->result_array() as $row) {
+            $pegawais[] = $row;
+        }
+    }
+    return $pegawais;
+ }
  public function deleteLokasi($id)
  {
      return $this->db->delete('lokasi', array("lokasi_id" => $id));

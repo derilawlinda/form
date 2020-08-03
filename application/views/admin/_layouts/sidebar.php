@@ -24,6 +24,8 @@
                             <a class="nav-link" href="<?=base_url()?>absen/laporan"
                                 ><div class="sb-nav-link-icon"><i class="fas fa-calendar"></i></div>
                                 Laporan Absen Lokasi</a>
+
+                            
 							
                             <!--<a class="nav-link" href="<?=base_url()?>admin/survey"
                                 ><div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
@@ -41,6 +43,14 @@
                             <a class="nav-link" href="<?=base_url()?>rekapabsen/upload"
                                 ><div class="sb-nav-link-icon"><i class="fas fa-file"></i></div>
                                 Upload Rekap Absen</a>
+
+                            <a class="nav-link" href="<?=base_url()?>rekapabsen/tabelAbsensi"
+                                ><div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Tabel Absensi Lokasi</a>
+
+                            <a class="nav-link" href="<?=base_url()?>rekapabsen/projectSchedule"
+                                ><div class="sb-nav-link-icon"><i class="fas fa-calendar"></i></div>
+                                Project Schedule</a>
                             <?php } ?>
 
                             <?php if($role == "adminlokasi" || $role == "admin" || $role == "user"){ 

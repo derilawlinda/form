@@ -14,6 +14,8 @@ class Rekapabsen extends CI_Controller {
         $this->load->model('UploadRekapAbsen_model');
         $this->load->library('Excel');
         $this->load->model("Login_model");
+        $this->load->model("Projectschedule_model");
+        $this->load->database('default');
         if($this->Login_model->isNotLogin()) redirect(site_url('admin/login'));
 
     }
@@ -321,5 +323,149 @@ public function index(){
     }
 
   }
+
+  public function tabelAbsensi(){
+
+        $data["projects"] = $this->Absen_model->getDistinctProjectNickNames();
+        $this->load->view("admin/Absen/tabelAbsensi", $data);
+  }
+
+  public function generateAbsensiTable(){
+
+    $projectNickName = $this->input->get('project');
+    $bulanNumber = $this->input->get('bulanNumber');
+    $tahun = $this->input->get('tahun');
+    $bulanArray = array("Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember");
+    $pegawais = $this->Absen_model->getPegawaiAndKlasifikasiByProjectNickName($projectNickName);
+    $lastDayThisMonth = $this->getNumberOfDaysInMonth($bulanNumber+1,$tahun);
+
+
+    $table = "<table border='1' class='table table-bordered table-responsive statistics' id='tabelAbsensi'>";
+    $table .= "<tr>";
+    $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;'> <strong> Nama </strong> </td>";
+    $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;'> <strong> Klasifikasi </strong>  </td>";
+    $table .= "<td style='background-color:gainsboro;text-align:center' colspan=".$lastDayThisMonth."><strong>".$bulanArray[$bulanNumber]." ".$tahun."</strong></td>";
+    $table .= "</tr>";
+    $table .= "<tr>";
+    for ($x = 0; $x < $lastDayThisMonth; $x++) {
+      $table .= "<td>".($x+1)."</td>";
+    }
+    $table .= "</tr>";
+
+    foreach($pegawais as $pegawai)
+      {
+        $table .= "<tr>";
+        $table .= "<td>".$pegawai["nama_pekerja"]."</td>";
+        $table .= "<td>".$pegawai["jabatan"]."</td>";
+        
+        for ($x = 0; $x < $lastDayThisMonth; $x++) {
+          $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$tahun."-".$bulanNumber."-".($x+1),'%a');
+          if ( $pegawai["roster"] == 21 ){
+            if(($numOfWeekWorking - 2) % 3 == 0){
+
+              $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+            }else{
+              $table .= "<td style='background-color:green;'>HDR</td>";
+            }
+            
+          }elseif($pegawai["roster"] == 42){
+            
+            if($numOfWeekWorking&1){
+              if(($numOfWeekWorking - 5) % 6 == 0){
+                $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+              }else{
+                $table .= "<td style='background-color:green;'>HDR</td>";
+              }
+            }else{
+              if(($numOfWeekWorking - 4) % 6 == 0){
+                $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+              }else{
+                $table .= "<td style='background-color:green;'>HDR</td>";
+              }
+            }
+          }
+        }
+
+        $table .= "</tr>";
+          
+      }
+    
+    $table .= "</table>";
+    echo($table);
+  }
+
+  public function getNumberOfDaysInMonth($month, $year) {
+    // Using first day of the month, it doesn't really matter
+    $date = $year."-".$month."-1";
+    return date("t", strtotime($date));
+  }
+
+  public function weekDifference($date_1 , $date_2 , $differenceFormat = '%a' )
+  {
+      $datetime1 = date_create($date_1);
+      $datetime2 = date_create($date_2);
+    
+      $interval = date_diff($datetime1, $datetime2);
+    
+      return floor($interval->format($differenceFormat)/7);
+      //return $datetime2->format('Y-m-d H:i:s');
+    
+  }
+
+  public function projectSchedule(){
+
+      $data["projects"] = $this->Absen_model->getDistinctProjectNickNames();
+      $this->load->view("admin/Absen/projectSchedule", $data);
+  }
+
+  public function projectScheduleDetail(){
+
+      $projectNickName = $this->input->get('project');
+      $data["project_nickname"] = $projectNickName;
+      $data["project_schedules"] = $this->Projectschedule_model->getProjectScheduleByProjectNickname($projectNickName);
+      $this->load->view("admin/Absen/projectScheduleDetail", $data);
+  }
+
+  public function syncDatabase(){
+
+    
+    $projectNickName = $this->input->post('projectNickName');
+    
+    $array_database = $this->Projectschedule_model->getProjectScheduleArrayByProjectNickName($projectNickName);
+    $array_client = json_decode($this->input->post('project_schedules'), true);
+
+   
+    //project_schedule update 
+    $this->db->update_batch('project_schedule', $array_client,'id_project_schedule'); 
+
+    
+    //project_schedule insert
+    $arrayToInsert = array_diff_key($array_client, $array_database);
+    if(count($arrayToInsert)){
+      foreach ($arrayToInsert as $key => $value) {
+        unset($arrayToInsert[$key]['id_project_schedule']);
+      };
+      $this->db->insert_batch('project_schedule', $arrayToInsert); 
+    }
+    
+    
+
+    //project_schedule delete
+    $arrayToDelete = array_diff_key($array_database, $array_client);
+    $deleteWhere = array();
+    if(count($arrayToDelete)){
+      foreach ($arrayToDelete as $key => $value) {
+        array_push($deleteWhere ,$key);
+      }
+      $this->db->where_in('id_project_schedule', $deleteWhere);
+      $this->db->delete('project_schedule');
+    }
+
+    
+    
+    
+  }
+
+
 
 }

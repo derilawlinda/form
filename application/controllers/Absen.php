@@ -157,4 +157,6 @@ public function batch($id = NULL){
           redirect(site_url('absen/lokasi'));
       }
   }
+
+  
 }
