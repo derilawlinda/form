@@ -34,6 +34,7 @@
                                         <option value="CT" <?=$project_schedule['project_status'] == 'CT' ? ' selected="selected"' : '';?>>Cuti (CT)</option>
                                         <option value="IZN" <?=$project_schedule['project_status'] == 'IZN' ? ' selected="selected"' : '';?>>Izin (IZN)</option>
                                 </select>
+                                <span class="invalid-feedback"> Required </span>
                             </td>  
                             <td><input type="date" name="statusStartDate" class="form-control status-list" required value="<?php echo($project_schedule['start_date']) ?>" />
                             <div class="invalid-feedback">Tidak bisa lebih besar dari end date</div></td> 
@@ -68,6 +69,7 @@
                                         <option value="CT">Cuti (CT)</option>
                                         <option value="IZN">Izin (IZN)</option>
                                 </select>
+                                <span class="invalid-feedback"> Required </ span>
                             </td>  
                             <td><input type="date" name="statusStartDate" class="form-control status-list" required />
                             <div class="invalid-feedback">Tidak bisa lebih besar dari tanggal akhir</div>
