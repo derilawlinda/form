@@ -68,12 +68,17 @@
             $(document).ready(function() { 
                 $( "#projectdd" ).change(function() {
 
-                    $.get("<?=base_url()?>index.php/Rekapabsen/projectScheduleDetail", 
+                    if($(this).val() != ""){
+                        $.get("<?=base_url()?>index.php/Rekapabsen/projectScheduleDetail", 
                         { project: $("#projectdd").val()
                         },
                         function(data, status){
                             $("#table").html(data);
-                    });
+                    });  
+                    }else{
+                        $("#table").html("<div> Pilih project </div>");
+                    }
+                   
                     
                 });
                 var i=1;  

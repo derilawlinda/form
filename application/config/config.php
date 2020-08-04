@@ -24,7 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 //$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/absencrew/';
-     $config['base_url'] = 'http://localhost:9000/';
+$config['base_url'] = 'http://localhost:9000';
 /*
 |--------------------------------------------------------------------------
 | Index File

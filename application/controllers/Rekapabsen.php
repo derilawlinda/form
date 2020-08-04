@@ -376,7 +376,17 @@ public function index(){
           $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$thisDate,'%a');
           if ( $pegawai["roster"] == 21 ){
             if(($numOfWeekWorking - 2) % 3 == 0){
-              $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+              if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                foreach($projectStatuses as $projectStatus){
+                  if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                    $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                  }
+                }
+                $table .= $cell;
+                
+              }else{                
+                $table .= "<td data-fill-color='FFFF0000' style='background-color:red;'>OFF</td>";
+              }
 
             }else{
               foreach($projectStatuses as $projectStatus){
