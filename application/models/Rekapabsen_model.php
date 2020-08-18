@@ -326,4 +326,19 @@ class Rekapabsen_model extends CI_Model
     {
         return $this->db->delete($this->_table, array("no" => $no));
     }
+
+    public function getProjectsByUsername($id_user)
+    {
+        $result = array();
+        $query = $this->db->select('project')
+                    ->from('user_projects')
+                    ->where('id_user',$id_user)
+                    ->get();
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $result[] = $row;
+            }
+        }
+        return $result;
+    }
 }

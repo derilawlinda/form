@@ -8,6 +8,7 @@ class UserAccount extends CI_Controller
     {
         parent::__construct();
         $this->load->model("User_model");
+        $this->load->model("Absen_model");
         $this->load->library('form_validation');
         $this->load->helper('url');
         $this->load->model("Login_model");
@@ -17,6 +18,7 @@ class UserAccount extends CI_Controller
     public function index()
     {
         $data["userAccount"] = $this->User_model->getUserAccount();
+        $data["projects"] = $this->Absen_model->getDistinctProjectNickNames();
         // $data["users"] = $this->User_model->getUsers();
         $this->load->view("admin/User/userManagement_view", $data);
     }

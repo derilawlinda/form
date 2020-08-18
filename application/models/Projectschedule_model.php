@@ -52,20 +52,19 @@ class Projectschedule_model extends CI_Model
         return $result;
     }
 
-    public function getProjectStatusByMonthYearAndProjectNickName($month, $year, $projectNickName)
+    public function getProjectStatusByMonthYearAndProjectNickName($lastDate,$lastMonth,$lastYear,$date,$month, $year, $projectNickName)
     {
         $result = array();
         $query = $this->db->select('start_date,end_date,project_status')
                     ->from('project_schedule')
-                    ->where('month(start_date)', $month)
-                    ->where('year(start_date)', $year)
-                    ->group_start()
-                    ->or_where('month(end_date)', $month)
-                    ->where('year(end_date)', $year)
-                    ->group_end()
                     ->where('project_nickname',$projectNickName)
+                    ->group_start()
+                        ->where('start_date BETWEEN " '.$lastYear.'-'.$lastMonth.'-'.$lastDate.' " and "'.$year.'-'.$month.'-'.$date.'"')
+                        ->or_where('end_date BETWEEN " '.$lastYear.'-'.$lastMonth.'-'.$lastDate.' " and "'.$year.'-'.$month.'-'.$date.'"')
+                    ->group_end()    
                     ->order_by('start_date', 'ASC')
                     ->get();
+        
         if ($query->num_rows() > 0) {
             foreach ($query->result_array() as $row) {
                 $result[] = $row;

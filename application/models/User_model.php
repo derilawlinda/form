@@ -66,6 +66,10 @@ class User_model extends CI_Model {
       $sn = $this->input->post('sn');
       $role = $this->input->post('role');
       $no_pekerja = $this->input->post('no_pekerja');
+      $projects = $this->input->post('projects');
+      
+      
+      
 
       $data = [
       'username' => $username,
@@ -76,8 +80,28 @@ class User_model extends CI_Model {
       'role' => $role,
       'no_pekerja' => $no_pekerja
       ];
+      $this->db->insert('users', $data);
+      $user_id = $this->db->insert_id();
+      if($role == "koordinator"){
+        foreach($projects as $project){
+          $data_user_projects[] = array(
+              "id_user" => $user_id,
+              "project"=> $project
+          );
 
-      return $this->db->insert('users', $data);
+        }
+        return $this->db->insert_batch('user_projects', $data_user_projects);  
+
+      }else{
+        
+        $data_user_projects["id_user"] = $user_id;
+        $data_user_projects["project"] = $projects;
+        return $this->db->insert('user_projects', $data_user_projects);
+      }
+     
+      
+
+
   }
 
   public function delete()

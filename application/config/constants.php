@@ -84,3 +84,19 @@ defined('EXIT_DATABASE')       OR define('EXIT_DATABASE', 8); // database error
 defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 define('SITE_NAME', 'Form Pekerja');
+
+define('APPROVAL_STATUS', array(
+    'APPROVED_BY_ADMIN_LOKASI' => 1,
+    'APPROVED_BY_KOORDINATOR' => 2,
+    'APPROVED_BY_USER' => 3,
+    'REJECTED_BY_USER' => 4,
+    'APPROVED_BY_SYSYEM' => 99
+));
+
+define('TEXT_APPROVAL_STATUS', array(
+    1 => 'APPROVED BY ADMIN LOKASI',
+    2 => 'APPROVED BY KOORDINATOR',
+    3 => 'APPROVED BY USER',
+    4 => 'REJECTED BY USER',
+    99 => 'APPROVED BY SYSYEM'
+));

@@ -24,7 +24,7 @@
                             <td>
                                 <select name="project_status" class="form-control">
                                         <option value="">Status</option>
-                                        <option value="OFF" <?=$project_schedule['project_status'] == 'OFF' ? ' selected="selected"' : '';?>>OFF Duty (OFF) </option>
+                                        <option value="OFT" <?=$project_schedule['project_status'] == 'OFT' ? ' selected="selected"' : '';?>>OFF Duty (OFT) </option>
                                         <option value="OFJ" <?=$project_schedule['project_status'] == 'OFJ' ? ' selected="selected"' : '';?>>OFF dalam Perjalan (Crew Non Lokal) (OFJ)</option>
                                         <option value="ORC" <?=$project_schedule['project_status'] == 'ORC' ? ' selected="selected"' : '';?>>Operational Rate Potong Catering (ORC)</option>
                                         <option value="ORT" <?=$project_schedule['project_status'] == 'ORT' ? ' selected="selected"' : '';?>>Operational Rate Tanpa Potong Catering (ORT)</option>

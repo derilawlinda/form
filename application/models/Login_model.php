@@ -23,6 +23,7 @@ class Login_model extends CI_Model
             if($isPasswordTrue){ 
                 // login sukses yay!
     			$data_session = array(
+                    'user_id' => $user->user_id,
     				'email' => $post["email"],
     				'user_logged' => $user,
     				'full_name' => $user->full_name,

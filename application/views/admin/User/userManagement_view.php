@@ -3,6 +3,7 @@
     <head>
         <?php $this->load->view("admin/_layouts/head.php") ?>
         <title>Data User</title>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
     </head>
     <body>
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -56,6 +57,7 @@
                                                 if($row->role == "adminlokasi"){echo '<td>Admin Lokasi</td>';}
                                                 if($row->role == "user"){echo '<td>User Lokasi</td>';}
                                                 if($row->role == "crew"){echo '<td>Crew / Staff</td>';}
+                                                if($row->role == "koordinator"){echo '<td>Koordinator</td>';}
                                             ?>
                                             <!-- <td><?php echo $row->role; ?></td> -->
                                             <td> 
@@ -120,9 +122,24 @@
                                 <option value="admin"> Super Administrator </option>
                                 <option value="hr"> HR </option>
                                 <option value="adminlokasi"> Admin Lokasi </option>
+                                <option value="koordinator"> Koordinator </option>
                                 <option value="user"> User Lokasi </option>
                                 <option value="crew"> Crew / Staff </option>
                             </select>
+                        </div>
+                        <div class="form-group" id="projects_fg" style="display:none;">
+                            <label for="projectdd">Project</label>
+                                <select class="form-control" id="projectdd" name="projects" multiple="multiple">
+                                    <option value="">- Pilih Salah Satu -</option>
+                                    <?php
+                                        foreach($projects as $project)
+                                        {
+                                            ?>
+                                                <option value="<?=$project["project_nickname"] ?>"><?=$project["project_nickname"]?></option>
+                                            <?php
+                                        }
+                                    ?>
+                                </select>
                         </div>
                         <input type="hidden" id="no_pekerja" name="no_pekerja">
                     </div>
@@ -165,12 +182,36 @@
         </div>
 
         <?php $this->load->view("admin/_layouts/js.php") ?>   
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
 		<script type='text/javascript'>
             function hapus(params) {
                 $('#hapusModal').modal('show');
                 $('#idUser').val(params);
             }
 		  $(document).ready(function(){
+
+            
+
+            $("[name='role']").change(function(){
+                
+                if($(this).val() == 'adminlokasi'){
+                    $("#projects_fg").show();
+                    $("#projectdd")
+                    .attr('name', 'projects')
+                    .attr('required', true).select2();
+                 
+                }else if($(this).val() == 'koordinator'){
+                    $("#projects_fg").show();
+                    $("#projectdd")
+                    .attr('name', 'projects[]')
+                    .attr('required', true).select2();
+                }else{
+                    $("#projects_fg").hide();
+                    $("#projectdd").attr('required', false);
+                }
+
+            });
 		  
 			 $( "#email_kantor" ).autocomplete({
 			  source: function( request, response ) {

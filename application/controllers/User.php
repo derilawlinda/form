@@ -20,7 +20,6 @@ class User extends CI_Controller {
         $temp = $this->Temp_model;
         $validation = $this->form_validation;
         $validation->set_rules($temp->rules());
-
         if ($validation->run()) {
             $temp->save();
             $this->session->set_flashdata('success', 'Data Berhasil Dikirim');

@@ -90,7 +90,8 @@
 	    <?php $this->load->view("admin/_layouts/js.php") ?>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>                           
-		<script type='text/javascript'>
+		<script src="<?=base_url()?>js/editable.js"></script>
+        <script type='text/javascript'>
             $(document).ready(function() { 
                 var tahunArray = new Array();
                 var today = new Date();
@@ -113,7 +114,7 @@
                 );
 
                 $("#submit").click(function() { 
-                    $.get("<?=base_url()?>index.php/Rekapabsen/generateAbsensiTable", 
+                    $.get("<?=base_url()?>index.php/Rekapabsen/getTable", 
                     { project: $("#projectdd").val(),
                       bulanNumber : $("#monthdd").val(),
                       tahun : $("#yeardd").val()

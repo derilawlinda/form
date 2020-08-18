@@ -53,11 +53,15 @@
                                 Project Schedule</a>
                             <?php } ?>
 
-                            <?php if($role == "adminlokasi" || $role == "admin" || $role == "user"){ 
+                            <?php if($role == "adminlokasi" || $role == "admin" || $role == "user" ||$role == "koordinator"  ){ 
                             if($role == "user"){echo '<div class="sb-sidenav-menu-heading">User Lokasi</div>';} ?>
-                            <a class="nav-link" href="<?=base_url()?>absen/approve"
+                            <a class="nav-link" href="<?=base_url()?>rekapabsen/absensiApproval"
                                 ><div class="sb-nav-link-icon"><i class="fas fa-check"></i></div>
                                 Approve Absensi</a>
+
+                            <a class="nav-link" href="<?=base_url()?>rekapabsen/absensiApprovalKoordinator"
+                                ><div class="sb-nav-link-icon"><i class="fas fa-check"></i></div>
+                                Approve Absensi (User)</a>
                             <?php } ?>
 
                             
