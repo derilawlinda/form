@@ -200,11 +200,12 @@
                 $( "#projectdd" ).change(function() {
                     $.get("<?=base_url()?>index.php/Rekapabsen/getTable", 
                         { project: $(this).val(),
-                        bulanNumber : <?php echo($bulan) ?>,
+                        bulanNumber : <?php echo($bulan - 1) ?>,
                         tahun : <?php echo($tahun) ?>
                         },
                         function(data, status){
                             $("#table").html(data);
+                            generateTable();
             
                     });
                     $.get("<?=base_url()?>index.php/Rekapabsen/getStatus", 
@@ -213,7 +214,9 @@
                         tahun : <?php echo($tahun) ?>
                         },
                         function(data, status){
-                            $("#approvalstatus").html(data);
+                            var jsonData = JSON.parse(data);
+                            $("#approvalstatus").html(jsonData["status"]);
+                            $("#notes").html(jsonData["notes"]);
             
                     });
                 });
@@ -232,84 +235,7 @@
                 cellcolor["IZ"] = "A6A6A6"; //grey
                 
                 var edited = {};    
-                $("#tabelAbsensi").editable({
-                    keyboard: true,
-                    dblclick: false,
-                    button: true,
-                    buttonSelector: ".edit",
-                    dropdowns: {
-                            work_status: ['NA','OFT','OFJ', 'ORC', 'ORT', 'MVR','MTR','DK','CT']
-                    },
-                    maintainWidth: true,
-                    edit: function(values) {
-                        var t = document.getElementById('tabelAbsensi');
-                        $("td select").change(function(){
-                            var rowIndex = $(this).parent().parent().index();
-                            var colIndex = $(this).parent().index() - 3;
-                            var date = $(t.rows[1].cells[colIndex]).text();
-                            var no_pekerja = $(t.rows[rowIndex].cells[0]).text().toString();
-                            console.log(edited);
-                            if(!(no_pekerja in edited)) {
-                                console.log(no_pekerja);
-                                edited[no_pekerja] = {};
-                            };
-                            var bulan = <?php echo($bulan); ?> ;
-                            if(date > 20){
-                                bulan = bulan - 1;
-                            }
-                            var tanggal = '<?php echo($tahun.'-'); ?>'+bulan+'-'+date;
-                            edited[no_pekerja][tanggal] = $(this).val();
-                        });
-                    },
-                    save: function(values) {
-                        var rows = $(this).children().children();
-                        for (i = 2; i < rows.length; i++) {
-                            var countStatus = new Array();
-                            countStatus["OFT"] = 0;
-                            countStatus["OFJ"] = 0;
-                            countStatus["ORC"] = 0;
-                            countStatus["ORT"] = 0;
-                            countStatus["MVR"] = 0;
-                            countStatus["MTR"] = 0;
-                            countStatus["DK"] = 0;
-                            countStatus["CT"] = 0;
-                            countStatus["IZN"] = 0;
-                            countStatus["NA"] = 0;
-                            var cells = $(rows[i]).children();
-                            for (j = 3; j < cells.length - 11; j++) {
-                                var tdcolor = cellcolor[$(cells[j]).text()];
-                                $(cells[j]).css("background-color", "#"+tdcolor);
-                                $(cells[j]).attr( "data-fill-color", "FF"+tdcolor);
-                                countStatus[$(cells[j]).text()] += 1;
-                            }
-                            $(cells[cells.length - 1]).text(countStatus["NA"]);
-                            $(cells[cells.length - 2]).text(countStatus["IZN"]);
-                            $(cells[cells.length - 3]).text(countStatus["CT"]);
-                            $(cells[cells.length - 4]).text(countStatus["DK"]);
-                            $(cells[cells.length - 5]).text(countStatus["MTR"]);
-                            $(cells[cells.length - 6]).text(countStatus["MVR"]);
-                            $(cells[cells.length - 7]).text(countStatus["ORT"]);
-                            $(cells[cells.length - 8]).text(countStatus["ORC"]);
-                            $(cells[cells.length - 9]).text(countStatus["OFJ"]);
-                            $(cells[cells.length - 10]).text(countStatus["OFT"]);
-                        };
-                        $.post("<?=base_url()?>index.php/Rekapabsen/saveRekapAbsen", 
-                            {
-                                data : JSON.stringify(edited)
-                            }
-                            ,function() {
-                                
-                                
-                            });
-
-                        
-               
-                    },
-                    cancel: function(values) {
-                        edited = [];
-                    }
-                });
-
+                
 
 
                 $( "#yeardd" ).change(function() {
@@ -478,7 +404,9 @@
                             tahun : <?php echo($tahun) ?>
                             },
                             function(data, status){
-                                $("#approvalstatus").html(data);
+                                var jsonData = JSON.parse(data);
+                                $("#approvalstatus").html(jsonData["status"]);
+                                $("#notes").html(jsonData["notes"]);
                 
                         });
                     })
@@ -501,12 +429,89 @@
                         </div>`);
                         $("#modalDialog").modal();
                     });
-
-                    
-                    
-                    
                 });
-            }); 
+            });
+        var generateTable = function(){
+            $("#tabelAbsensi").editable({
+                    keyboard: true,
+                    dblclick: false,
+                    button: true,
+                    buttonSelector: ".edit",
+                    dropdowns: {
+                            work_status: ['NA','OFT','OFJ', 'ORC', 'ORT', 'MVR','MTR','DK','CT']
+                    },
+                    maintainWidth: true,
+                    edit: function(values) {
+                        var t = document.getElementById('tabelAbsensi');
+                        $("td select").change(function(){
+                            var rowIndex = $(this).parent().parent().index();
+                            var colIndex = $(this).parent().index() - 3;
+                            var date = $(t.rows[1].cells[colIndex]).text();
+                            var no_pekerja = $(t.rows[rowIndex].cells[0]).text().toString();
+                            console.log(edited);
+                            if(!(no_pekerja in edited)) {
+                                console.log(no_pekerja);
+                                edited[no_pekerja] = {};
+                            };
+                            var bulan = <?php echo($bulan); ?> ;
+                            if(date > 20){
+                                bulan = bulan - 1;
+                            }
+                            var tanggal = '<?php echo($tahun.'-'); ?>'+bulan+'-'+date;
+                            edited[no_pekerja][tanggal] = $(this).val();
+                        });
+                    },
+                    save: function(values) {
+                        var rows = $(this).children().children();
+                        for (i = 2; i < rows.length; i++) {
+                            var countStatus = new Array();
+                            countStatus["OFT"] = 0;
+                            countStatus["OFJ"] = 0;
+                            countStatus["ORC"] = 0;
+                            countStatus["ORT"] = 0;
+                            countStatus["MVR"] = 0;
+                            countStatus["MTR"] = 0;
+                            countStatus["DK"] = 0;
+                            countStatus["CT"] = 0;
+                            countStatus["IZN"] = 0;
+                            countStatus["NA"] = 0;
+                            var cells = $(rows[i]).children();
+                            for (j = 3; j < cells.length - 11; j++) {
+                                var tdcolor = cellcolor[$(cells[j]).text()];
+                                $(cells[j]).css("background-color", "#"+tdcolor);
+                                $(cells[j]).attr( "data-fill-color", "FF"+tdcolor);
+                                countStatus[$(cells[j]).text()] += 1;
+                            }
+                            $(cells[cells.length - 1]).text(countStatus["NA"]);
+                            $(cells[cells.length - 2]).text(countStatus["IZN"]);
+                            $(cells[cells.length - 3]).text(countStatus["CT"]);
+                            $(cells[cells.length - 4]).text(countStatus["DK"]);
+                            $(cells[cells.length - 5]).text(countStatus["MTR"]);
+                            $(cells[cells.length - 6]).text(countStatus["MVR"]);
+                            $(cells[cells.length - 7]).text(countStatus["ORT"]);
+                            $(cells[cells.length - 8]).text(countStatus["ORC"]);
+                            $(cells[cells.length - 9]).text(countStatus["OFJ"]);
+                            $(cells[cells.length - 10]).text(countStatus["OFT"]);
+                        };
+                        $.post("<?=base_url()?>index.php/Rekapabsen/saveRekapAbsen", 
+                            {
+                                data : JSON.stringify(edited)
+                            }
+                            ,function() {
+                                
+                                
+                            });
+
+                        
+               
+                    },
+                    cancel: function(values) {
+                        edited = [];
+                    }
+                });
+
+        };
+        generateTable();
 		 
 		</script>        
 

@@ -17,8 +17,8 @@ class Rekapabsen extends CI_Controller {
         $this->load->model("Login_model");
         $this->load->model("Projectschedule_model");
         $this->load->database('default');
-        $this->load->model('rekapAbsensiApproval_model');
-        $this->load->model('overrideAbsensi_model');
+        $this->load->model('RekapAbsensiApproval_model');
+        $this->load->model('OverrideAbsensi_model');
         if($this->Login_model->isNotLogin()) redirect(site_url('admin/login'));
 
     }
@@ -345,11 +345,26 @@ public function index(){
     $projectNickName = $this->input->get('project');
     $bulanNumber = $this->input->get('bulanNumber');
     $tahun = $this->input->get('tahun');
-    $projectStatus = $this->rekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($bulanNumber,$tahun,$projectNickName);
+    $projectStatus = $this->RekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($bulanNumber,$tahun,$projectNickName);
     if(count($projectStatus)>0){
-      echo(TEXT_APPROVAL_STATUS[$projectStatus[0]["status"]]);
+      echo(
+        json_encode(
+          array(
+            "status" => TEXT_APPROVAL_STATUS[$projectStatus[0]["status"]],
+            "notes" => $projectStatus[0]["notes"]
+          )
+        )
+      );
+        
     }else{
-      echo("-");
+      echo(
+        json_encode(
+          array(
+            "status" => "-",
+            "notes" => "-"
+          )
+        )
+      );
     }
    
   }
@@ -437,7 +452,7 @@ public function index(){
             $thisDate = $tahun."-".($bulanNumber+1)."-".($x);
           }
           $cell = "<td data-field='work_status' data-fill-color='FFFFFFFF' style='background-color:white;'>NA</td>";
-          $overRideArray = $this->overrideAbsensi_model->getOverrideStatusByDateAndNoPekerja($thisDate,$pegawai["no_pekerja"]);
+          $overRideArray = $this->OverrideAbsensi_model->getOverrideStatusByDateAndNoPekerja($thisDate,$pegawai["no_pekerja"]);
           $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$thisDate,'%a');
           if(strtotime($pegawai["tgl_masuk"]) > strtotime($thisDate)){
             $count["NA"] = 0;
@@ -452,14 +467,20 @@ public function index(){
                   $count["OFT"] += 1;                
                   $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
               }else{
-                foreach($projectStatuses as $projectStatus){
-                  if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                        $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
-                        $count[$projectStatus["project_status"]] += 1;
-                      }else{
-                        $count["NA"] += 1;
-                      }
+                if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                  foreach($projectStatuses as $projectStatus){
+                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                          $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                          $count[$projectStatus["project_status"]] += 1;
+                        }else{
+                          $count["NA"] += 1;
+                        }
+                  }
+                }else{
+                  $count["OFT"] += 1;                
+                  $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
                 }
+                
               }
 
             }
@@ -476,19 +497,10 @@ public function index(){
 
                 if($numOfWeekWorking&1){
                   if(($numOfWeekWorking - 5) % 6 == 0){
-                    // if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
-                    //   foreach($projectStatuses as $projectStatus){
-                    //     if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                    //       $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
-                    //     }
-                    //   }
-                    //   $table .= $cell;
-                      
-                    // }else{    
                       $count["OFT"] += 1;             
                       $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
-                    // }
                   }else{
+                    if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
                       foreach($projectStatuses as $projectStatus){
                         if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                           $count[$projectStatus["project_status"]] += 1;
@@ -497,22 +509,18 @@ public function index(){
                           $count["NA"] += 1;
                         }
                       }
+                    }else{
+                      $count["OFT"] += 1;             
+                      $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                    }
+                      
                   }
                 }else{
                   if(($numOfWeekWorking - 4) % 6 == 0){
-                    // if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
-                    //   foreach($projectStatuses as $projectStatus){
-                    //     if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                    //       $cell = "<td data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
-                    //     }
-                    //   }
-                    //   $table .= $cell;
-                      
-                    // }else{
                          $count["OFT"] += 1;                 
                          $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
-                    // }
                   }else{
+                    if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
                       foreach($projectStatuses as $projectStatus){
                         if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                           $count[$projectStatus["project_status"]] += 1;
@@ -521,11 +529,14 @@ public function index(){
                           $count["NA"] += 1;
                         }
                       }
+                    }else{
+                      $count["OFT"] += 1;                 
+                      $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                    }
                   }
                 }
               }
               $table .= $cell;
-
             }
           }
         }
@@ -541,9 +552,7 @@ public function index(){
         $table .= "<td>".$count["IZN"]."</td>";
         $table .= "<td>".$count["NA"]."</td>";
         $table .= "</tr>";
-          
       }
-    
     $table .= "</table>";
     return $table;
   }
@@ -565,7 +574,7 @@ public function index(){
                 'updated_by' => $updated_by,
                 'updated_at' => date("Y-m-d H:i:s")
             );
-            if($this->overrideAbsensi_model->getCountOverrideStatusByDateAndNoPekerja($key2,$no_pekerja)){
+            if($this->OverrideAbsensi_model->getCountOverrideStatusByDateAndNoPekerja($key2,$no_pekerja)){
               array_push($arraytoUpdate,$arr);
             }else{
               array_push($arraytoInsert,$arr);
@@ -573,11 +582,11 @@ public function index(){
         };
     };
     if(count($arraytoInsert)){
-      $this->overrideAbsensi_model->addBatchOverrideAbsensiBatch($arraytoInsert);
+      $this->OverrideAbsensi_model->addBatchOverrideAbsensiBatch($arraytoInsert);
     };
 
     foreach( $arraytoUpdate as $arrtoUpdate ){
-      $this->overrideAbsensi_model->updateByDateAndNoPekerja($arrtoUpdate["date"],$updated_by,$arrtoUpdate["no_pekerja"],$arrtoUpdate["status"]);
+      $this->OverrideAbsensi_model->updateByDateAndNoPekerja($arrtoUpdate["date"],$updated_by,$arrtoUpdate["no_pekerja"],$arrtoUpdate["status"]);
     };
     
     return header("HTTP/1.0 200");
@@ -593,7 +602,7 @@ public function index(){
     $approved_by = $this->session->userdata('email');
     $notes = $this->input->post('notes');
     $status = 0;
-    $approvalStatus = $this->rekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($monthPosted,$yearPosted,$project_nickname);
+    $approvalStatus = $this->RekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($monthPosted,$yearPosted,$project_nickname);
     
     if(count($approvalStatus)>0){
       if($approvalStatus[0]["status"] >= APPROVAL_STATUS['APPROVED_BY_ADMIN_LOKASI']){
@@ -633,9 +642,9 @@ public function index(){
 
     if($dateNow >= 15 && $dateNow <= 25 && $monthNow == $monthPosted && $yearNow == $yearPosted ){
       if(count($approvalStatus)>0){
-        $this->rekapAbsensiApproval_model->updateRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
+        $this->RekapAbsensiApproval_model->updateRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
       }else{
-        $this->rekapAbsensiApproval_model->addRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
+        $this->RekapAbsensiApproval_model->addRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
       }
       return header("HTTP/1.0 200");
     }else{
@@ -654,13 +663,13 @@ public function index(){
       $yearPosted = $this->input->post('tahun');
       $approved_by = $this->session->userdata('email');
       $notes = $this->input->post('notes');
-      $approvalStatus = $this->rekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($monthPosted,$yearPosted,$project_nickname);
+      $approvalStatus = $this->RekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($monthPosted,$yearPosted,$project_nickname);
       $status = APPROVAL_STATUS['REJECTED_BY_USER'];
       if($dateNow >= 15 && $dateNow <= 25 && $monthNow == $monthPosted && $yearNow == $yearPosted ){
         if(count($approvalStatus)>0){
-          $this->rekapAbsensiApproval_model->updateRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
+          $this->RekapAbsensiApproval_model->updateRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
         }else{
-          $this->rekapAbsensiApproval_model->addRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
+          $this->RekapAbsensiApproval_model->addRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
         }
         echo(json_encode(array(
           "status" => "REJECTED_BY_USER",
@@ -744,7 +753,7 @@ public function index(){
     $data['role'] = $user_role;
     $data['status'] = "-";
     $data['notes']= "-";
-    $approvalStatus = $this->rekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($data['bulan'],$data['tahun'],$data['project']);
+    $approvalStatus = $this->RekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($data['bulan'],$data['tahun'],$data['project']);
     if(count($approvalStatus)>0){
       $data['status'] = TEXT_APPROVAL_STATUS[$approvalStatus[0]["status"]];
       if($approvalStatus[0]["notes"]){

@@ -1,6 +1,6 @@
 <?php
 
-class rekapAbsensiApproval_model extends CI_Model
+class RekapAbsensiApproval_model extends CI_Model
 {
     private $_table = "rekap_absensi_approval";
 

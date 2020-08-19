@@ -129,7 +129,7 @@
                         </div>
                         <div class="form-group" id="projects_fg" style="display:none;">
                             <label for="projectdd">Project</label>
-                                <select class="form-control" id="projectdd" name="projects" multiple="multiple">
+                                <select class="form-control" id="projectdd" name="projects">
                                     <option value="">- Pilih Salah Satu -</option>
                                     <?php
                                         foreach($projects as $project)
@@ -199,12 +199,14 @@
                     $("#projects_fg").show();
                     $("#projectdd")
                     .attr('name', 'projects')
+                    .removeAttr('multiple')
                     .attr('required', true).select2();
                  
                 }else if($(this).val() == 'koordinator'){
                     $("#projects_fg").show();
                     $("#projectdd")
                     .attr('name', 'projects[]')
+                    .prop('multiple', 'multiple')
                     .attr('required', true).select2();
                 }else{
                     $("#projects_fg").hide();

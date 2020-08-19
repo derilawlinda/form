@@ -1,6 +1,6 @@
 <?php
 
-class overrideAbsensi_model extends CI_Model
+class OverrideAbsensi_model extends CI_Model
 {
 
     public function addBatchOverrideAbsensiBatch($dataArray)

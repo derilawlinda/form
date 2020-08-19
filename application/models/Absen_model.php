@@ -333,7 +333,7 @@ class Absen_model extends CI_Model {
 
  public function getDistinctProjectNickNamesAndStatusByMonthAndYear($draw,$start,$length,$search,$order_field, $order_ascdesc)
  {
-    $this->load->model('rekapAbsensiApproval_model', true);
+    $this->load->model('RekapAbsensiApproval_model', true);
     $month = date('n');
     $year = date('Y');
     $projects = array();
@@ -398,7 +398,7 @@ class Absen_model extends CI_Model {
 
  public function countProjectStatus($bulanNumber,$tahun,$projectNickName){
 
-    $this->load->model('overrideAbsensi_model');
+    $this->load->model('OverrideAbsensi_model');
     $this->load->model("Projectschedule_model");
     
     $pegawais = array();
@@ -444,7 +444,7 @@ class Absen_model extends CI_Model {
                 $thisDate = $tahun."-".($bulanNumber+1)."-".($x);
             }
                 
-            $overRideArray = $this->overrideAbsensi_model->getOverrideStatusByDateAndNoPekerja($thisDate,$pegawai["no_pekerja"]);
+            $overRideArray = $this->OverrideAbsensi_model->getOverrideStatusByDateAndNoPekerja($thisDate,$pegawai["no_pekerja"]);
             $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$thisDate,'%a');
 
             if(strtotime($pegawai["tgl_masuk"]) > strtotime($thisDate)){
@@ -457,16 +457,19 @@ class Absen_model extends CI_Model {
                         if(($numOfWeekWorking - 2) % 3 == 0){
                             $count["OFT"] += 1;                
                         }else{
-                            if(count($projectStatuses) > 0){
-                                foreach($projectStatuses as $projectStatus){
-                                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                                        $count[$projectStatus["project_status"]] += 1;
+                            if($this->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                                if(count($projectStatuses) > 0){
+                                    foreach($projectStatuses as $projectStatus){
+                                        if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                                            $count[$projectStatus["project_status"]] += 1;
+                                        }
                                     }
+                                }else{
+                                    $count["NA"] += 1;
                                 }
                             }else{
-                                $count["NA"] += 1;
+                                $count["OFT"] += 1;   
                             }
-                            
                         }
 
                     }
@@ -479,14 +482,18 @@ class Absen_model extends CI_Model {
                             if(($numOfWeekWorking - 5) % 6 == 0){
                                 $count["OFT"] += 1;             
                             }else{
-                                if(count($projectStatuses) > 0){
-                                    foreach($projectStatuses as $projectStatus){
-                                        if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                                            $count[$projectStatus["project_status"]] += 1;
+                                if($this->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                                    if(count($projectStatuses) > 0){
+                                        foreach($projectStatuses as $projectStatus){
+                                            if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                                                $count[$projectStatus["project_status"]] += 1;
+                                            }
                                         }
+                                    }else{
+                                        $count["NA"] += 1;
                                     }
                                 }else{
-                                    $count["NA"] += 1;
+                                    $count["OFT"] += 1;
                                 }
                             }
                         }
@@ -494,15 +501,20 @@ class Absen_model extends CI_Model {
                             if(($numOfWeekWorking - 4) % 6 == 0){
                                     $count["OFT"] += 1;                 
                             }else{
-                                if(count($projectStatuses) > 0){
-                                    foreach($projectStatuses as $projectStatus){
-                                        if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                                            $count[$projectStatus["project_status"]] += 1;
+                                if($this->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
+                                    if(count($projectStatuses) > 0){
+                                        foreach($projectStatuses as $projectStatus){
+                                            if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                                                $count[$projectStatus["project_status"]] += 1;
+                                            }
                                         }
+                                    }else{
+                                        $count["NA"] += 1;
                                     }
                                 }else{
-                                    $count["NA"] += 1;
+                                    $count["OFT"] += 1;
                                 }
+                                
                             }
                         }
                     }
