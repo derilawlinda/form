@@ -31,6 +31,16 @@ class RekapAbsensiApproval_model extends CI_Model
   
     }
 
+    public function addRekapAbsensiApprovalBatch($arrayToInsert)
+    {
+        //logging
+        $this->load->model('RekapAbsensiApprovalHistory_model');
+        if($this->db->insert_batch('rekap_absensi_approval', $arrayToInsert)){
+            $this->RekapAbsensiApprovalHistory_model->addRekapAbsensiApprovalHistoryBatch($arrayToInsert,'CREATE');
+        };
+  
+    }
+
     public function updateRekapAbsensiApproval($project_nickname,$bulan,$tahun,$approved_by,$notes,$status)
     {
         $lastStatus = $this->getRekapAbsensiApprovalByMonthYearAndProjectNickname($bulan,$tahun,$project_nickname);
@@ -75,6 +85,42 @@ class RekapAbsensiApproval_model extends CI_Model
                     ->where('bulan',$month)
                     ->where('tahun',$year)
                     ->where('project_nickname',$projectNickName)
+                    ->get();
+                    
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $result[] = $row;
+            }
+        }
+        return $result;
+        
+    }
+
+    public function getArrayProjectNameAbsensiApprovalByMonthYear($month,$year){
+
+        $result = array();
+        $query = $this->db->select('project_nickname')
+                    ->from('rekap_absensi_approval')
+                    ->where('bulan',$month)
+                    ->where('tahun',$year)
+                    ->get();
+                    
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $result[] = $row["project_nickname"];
+            }
+        }
+        return $result;
+        
+    }
+
+    public function getProjectNameAbsensiApprovalByMonthYear($month,$year){
+
+        $result = array();
+        $query = $this->db->select('*')
+                    ->from('rekap_absensi_approval')
+                    ->where('bulan',$month)
+                    ->where('tahun',$year)
                     ->get();
                     
         if ($query->num_rows() > 0) {

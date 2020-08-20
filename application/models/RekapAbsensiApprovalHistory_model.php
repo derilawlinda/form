@@ -27,6 +27,36 @@ class RekapAbsensiApprovalHistory_model extends CI_Model
   
     }
 
+    public function addRekapAbsensiApprovalHistoryBatch($arrayInserted,$action)
+    {
+        $this->load->helper('date');
+        date_default_timezone_set('Asia/Jakarta');
+        $datestring = '%Y-%m-%d %h:%i:%s';
+        $time = time();
+        $approved_at = mdate($datestring, $time);
+        if(!isset($action)){
+           $action = 'CREATE'; 
+        }
+        
+        $data = array();
+        foreach($arrayInserted as $arr){
+            
+            $data[] = array(
+                'project_nickname' => $arr["project_nickname"],
+                'bulan' => $arr["bulan"],
+                'tahun' => $arr["tahun"],
+                'notes' => $arr["notes"],
+                'status_from' => "-",
+                'status_to' => APPROVAL_STATUS["APPROVED_BY_SYSTEM"],
+                'approved_by' => 'SYSTEM',
+                'approved_at' => $arr["approved_at"],
+                'action' => $action
+            );
+        };
+        return $this->db->insert_batch('rekap_absensi_approval_history', $data);
+  
+    }
+
     public function getLastStatusApprovalByMonthYearAndProjectNickname($month,$year,$projectNickName){
 
         $result = array();

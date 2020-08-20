@@ -90,7 +90,7 @@ define('APPROVAL_STATUS', array(
     'APPROVED_BY_KOORDINATOR' => 2,
     'APPROVED_BY_USER' => 3,
     'REJECTED_BY_USER' => 4,
-    'APPROVED_BY_SYSYEM' => 99
+    'APPROVED_BY_SYSTEM' => 99
 ));
 
 define('TEXT_APPROVAL_STATUS', array(

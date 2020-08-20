@@ -316,6 +316,21 @@ class Absen_model extends CI_Model {
     return $projects;
  }
 
+ public function getArrayDistinctProjectNickNames()
+ {
+    $projects = array();
+    $query = $this->db->select('project_nickname')
+                ->distinct('project_nickname')
+                ->from('pekerja')
+                ->get(); 
+    if ($query->num_rows() > 0) {
+        foreach ($query->result_array() as $row) {
+            $projects[] = $row["project_nickname"];
+        }
+    }
+    return $projects;
+ }
+
  public function getPegawaiAndKlasifikasiByProjectNickName($projectNickName)
  {
     $pegawais = array();
@@ -563,4 +578,5 @@ class Absen_model extends CI_Model {
  {
      return $this->db->delete('lokasi', array("lokasi_id" => $id));
  }
+ 
 }
