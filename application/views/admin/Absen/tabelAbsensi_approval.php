@@ -37,6 +37,8 @@
         </div>
     </div>
 
+    
+
     <!-- Modal reject -->
 
     <div class="modal fade" id="noteModal" tabindex="-1" role="dialog" aria-labelledby="noteModalLabel" aria-hidden="true">
@@ -64,6 +66,8 @@
                 </div>
             </div>
         </div>
+
+
 
         <div id="layoutSidenav">
             <div id="layoutSidenav_nav">
@@ -169,7 +173,7 @@
         <script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>                           
 		<script src="<?=base_url()?>js/editable.js"></script>
         <script type='text/javascript'>
-            var edited = [];
+            var edited = {};
             $(document).ready(function() { 
                 var tahunArray = new Array();
                 var today = new Date();
@@ -183,11 +187,13 @@
                 $("#projectdd").select2();
                 $("#download").click(
                     function(){
-                        if($("projectspan")){
-                            projectname = $("#projectspan").text();
-                        };
+                        if($("#projectdd").val()){
+                            project = $("#projectdd").val();
+                        }else{
+                            project = $("#projectspan").text();
+                        }
                         TableToExcel.convert(document.getElementById("tabelAbsensi"), {
-                            name: <?php echo($tahun.$bulan)?>+"_"+projectname+".xlsx",
+                            name: <?php echo($tahun.$bulan)?>+"_"+project+".xlsx",
                             sheet: {
                                 name: "absensi"
                             }
@@ -198,8 +204,9 @@
                 
 
                 $( "#projectdd" ).change(function() {
+                    var ddvalue = $.trim($(this).val());
                     $.get("<?=base_url()?>index.php/Rekapabsen/getTable", 
-                        { project: $(this).val(),
+                        { project: ddvalue,
                         bulanNumber : <?php echo($bulan - 1) ?>,
                         tahun : <?php echo($tahun) ?>
                         },
@@ -209,30 +216,18 @@
             
                     });
                     $.get("<?=base_url()?>index.php/Rekapabsen/getStatus", 
-                        { project: $(this).val(),
+                        { project: ddvalue,
                         bulanNumber : <?php echo($bulan) ?>,
                         tahun : <?php echo($tahun) ?>
                         },
                         function(data, status){
                             var jsonData = JSON.parse(data);
-                            $("#approvalstatus").html(jsonData["status"]);
-                            $("#notes").html(jsonData["notes"]);
+                            $("#approvalstatus").text(jsonData["status"]);
+                            $("#notes").text("Notes : " + jsonData["notes"]);
             
                     });
                 });
 
-                var cellcolor = new Array();
-             
-                cellcolor["NA"] = "FFFFFF"; //white
-                cellcolor["OFT"] = "FF0000"; //red
-                cellcolor["OFJ"] = "996600"; // brown
-                cellcolor["ORC"] = "29B150"; // green
-                cellcolor["ORT"] = "92D04F"; // light green
-                cellcolor["MVR"] = "1470C0"; // blue
-                cellcolor["MTR"] = "FFFF01"; // yellow
-                cellcolor["DK"] = "7030A0"; //purple
-                cellcolor["CT"] = "F900FF"; // pink
-                cellcolor["IZ"] = "A6A6A6"; //grey
                 
                 var edited = {};    
                 
@@ -266,19 +261,88 @@
                     $("#cancel").prop("disabled",false);
                     $('#tabelAbsensi').data('plugin_editable').edit();
                     $("#approve").prop("disabled",true);
+                    if($("#projectdd")){
+                        $("#projectdd").prop("disabled",true)
+                    }
+                    var table = document.getElementById('tabelAbsensi');
+                    var tbody = document.getElementById('tabelAbsensiBody');
+                    $("select.status-dd").change(function(){
+                        var rowIndex = $(this).parent().parent().index();
+                        var colIndex = $(this).parent().index() - 3;
+                        var date = $(table.rows[1].cells[colIndex]).text();
+                        var no_pekerja = $(tbody.rows[rowIndex].cells[0]).text();
+                        console.log(no_pekerja);
+                        if(!(no_pekerja in edited)) {
+                            edited[no_pekerja] = {};
+                        };
+                        var bulan = <?php echo($bulan); ?> ;
+                        if(date > 20){
+                            bulan = bulan - 1;
+                        }
+                        var tanggal = '<?php echo($tahun.'-'); ?>'+bulan+'-'+date;
+                        if(!(tanggal in edited[no_pekerja])) {
+                            edited[no_pekerja][tanggal] = {};
+                        };
+                        edited[no_pekerja][tanggal]["status"] = $(this).val();
+                        edited[no_pekerja][tanggal]["old_status"] = $(this).data("old-value");
+                    });
+                    
+
 
                 });
 
                 $("#save").click(function(){
                     $("#edit").prop("disabled",false);
-                    $('#tabelAbsensi').data('plugin_editable').save();
+                    var project;
+                        
+                    var thisTable = $("#tableAbsensi");
+                    if($("#projectdd").val()){
+                        project = $("#projectdd").val();
+                    }else{
+                        project = $("#projectspan").text();
+                    }
+
+                    $.post("<?=base_url()?>index.php/Rekapabsen/saveRekapAbsen", 
+                        {
+                            data : JSON.stringify(edited),
+                            project : $.trim(project),
+                            bulan : <?php echo($bulan) ?>,
+                            tahun : <?php echo($tahun) ?>
+                        }
+                    ,function() {
+                        $('#tabelAbsensi').data('plugin_editable').save();
+                    })
+                    .fail(function(data){
+                        $("#modalDialog .modal-body").html(`
+                        <div class="row">
+                            <div class="col-3">
+                                <p></p>
+                                <p class="text-center">
+                                    <i class="fas fa-times fa-3x" style="color:red"></i>
+                                </p>
+                            </div>
+
+                            <div class="col-9 mt-3">
+                                <h2>
+                                <span>`+data.responseJSON.message+`</span>
+                                </h2>
+
+                            </div>
+                        </div>`);
+                        $("#modalDialog").modal();
+                        $('#tabelAbsensi').data('plugin_editable').cancel();
+                        edited = {}; 
+
+
+                    });
+                    
                     $(this).prop("disabled",true);
                     $("#cancel").prop("disabled",true);
                     $("#download").prop("disabled",false);
                     $("#approve").prop("disabled",false);
-
-                    
-
+                    if($("#projectdd")){
+                        $("#projectdd").prop("disabled",false)
+                    }
 
                 });
 
@@ -289,6 +353,10 @@
                     $('#tabelAbsensi').data('plugin_editable').cancel();
                     $("#download").prop("disabled",false);
                     $("#approve").prop("disabled",false);
+                    if($("#projectdd")){
+                        $("#projectdd").prop("disabled",false)
+                    }
+                    edited = {}; 
 
                 });
 
@@ -315,6 +383,8 @@
                         $("#noteModal").modal();
                     ;}
                 });
+
+                  
 
                 $("#submitButton").click(function(){
                 
@@ -392,9 +462,9 @@
                     ,function() {
                         var project;
                         if($("#projectdd").val()){
-                            project = $("#projectdd").val();
+                            project = $.trim($("#projectdd").val());
                         }else{
-                            project = $("#projectspan").text();
+                            project = $.trim($("#projectspan").text());
                         }
                         $("#modalDialog .modal-body").html('<p>Data tersimpan</p>');
                         $("#modalDialog").modal();
@@ -405,8 +475,8 @@
                             },
                             function(data, status){
                                 var jsonData = JSON.parse(data);
-                                $("#approvalstatus").html(jsonData["status"]);
-                                $("#notes").html(jsonData["notes"]);
+                                $("#approvalstatus").text(jsonData["status"]);
+                                $("#notes").text("Notes : "+ jsonData["notes"]);
                 
                         });
                     })
@@ -428,9 +498,22 @@
                             </div>
                         </div>`);
                         $("#modalDialog").modal();
+                        
                     });
                 });
             });
+
+            var cellcolor = new Array();
+            cellcolor["NA"] = "FFFFFF"; //white
+            cellcolor["OFT"] = "FF0000"; //red
+            cellcolor["OFJ"] = "996600"; // brown
+            cellcolor["ORC"] = "29B150"; // green
+            cellcolor["ORT"] = "92D04F"; // light green
+            cellcolor["MVR"] = "1470C0"; // blue
+            cellcolor["MTR"] = "FFFF01"; // yellow
+            cellcolor["DK"] = "7030A0"; //purple
+            cellcolor["CT"] = "F900FF"; // pink
+            cellcolor["IZ"] = "A6A6A6"; //grey
         var generateTable = function(){
             $("#tabelAbsensi").editable({
                     keyboard: true,
@@ -442,28 +525,11 @@
                     },
                     maintainWidth: true,
                     edit: function(values) {
-                        var t = document.getElementById('tabelAbsensi');
-                        $("td select").change(function(){
-                            var rowIndex = $(this).parent().parent().index();
-                            var colIndex = $(this).parent().index() - 3;
-                            var date = $(t.rows[1].cells[colIndex]).text();
-                            var no_pekerja = $(t.rows[rowIndex].cells[0]).text().toString();
-                            console.log(edited);
-                            if(!(no_pekerja in edited)) {
-                                console.log(no_pekerja);
-                                edited[no_pekerja] = {};
-                            };
-                            var bulan = <?php echo($bulan); ?> ;
-                            if(date > 20){
-                                bulan = bulan - 1;
-                            }
-                            var tanggal = '<?php echo($tahun.'-'); ?>'+bulan+'-'+date;
-                            edited[no_pekerja][tanggal] = $(this).val();
-                        });
+                        
                     },
                     save: function(values) {
-                        var rows = $(this).children().children();
-                        for (i = 2; i < rows.length; i++) {
+                        var rows = $('#tabelAbsensiBody').children();
+                        for (i = 0; i < rows.length; i++) {
                             var countStatus = new Array();
                             countStatus["OFT"] = 0;
                             countStatus["OFJ"] = 0;
@@ -476,6 +542,7 @@
                             countStatus["IZN"] = 0;
                             countStatus["NA"] = 0;
                             var cells = $(rows[i]).children();
+
                             for (j = 3; j < cells.length - 11; j++) {
                                 var tdcolor = cellcolor[$(cells[j]).text()];
                                 $(cells[j]).css("background-color", "#"+tdcolor);
@@ -493,20 +560,9 @@
                             $(cells[cells.length - 9]).text(countStatus["OFJ"]);
                             $(cells[cells.length - 10]).text(countStatus["OFT"]);
                         };
-                        $.post("<?=base_url()?>index.php/Rekapabsen/saveRekapAbsen", 
-                            {
-                                data : JSON.stringify(edited)
-                            }
-                            ,function() {
-                                
-                                
-                            });
-
-                        
-               
                     },
                     cancel: function(values) {
-                        edited = [];
+                        edited = {};
                     }
                 });
 

@@ -380,6 +380,7 @@ public function index(){
     $RGB["DK"] = "7030A0"; //purple
     $RGB["CT"] = "F900FF"; // pink
     $RGB["IZ"] = "A6A6A6"; //grey
+    $RGB["NA"] = "FFFFFF"; //grey
     $pegawais = array();
     $lastBulanNumber = $bulanNumber - 1;
     $tanggalArray = array();
@@ -393,6 +394,7 @@ public function index(){
     // echo($this->Absen_model->getCountAbsenByNoPekAndTanggal('200273','2020-07-11'));
     $table = "<table border='1' class='table table-bordered table-responsive statistics' id='tabelAbsensi'>";
     $table .= "<tr>";
+    $table .= "<thead>";
     $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;border-color:black;'> <strong> No Pekerja </strong> </td>";
     $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;border-color:black;'> <strong> Nama </strong> </td>";
     $table .= "<td rowspan=2 style='background-color:gainsboro;vertical-align:middle;border-color:black;'> <strong> Klasifikasi </strong>  </td>";
@@ -422,8 +424,8 @@ public function index(){
     $table .= "<td></td>";
     $table .= "<td>OFT</td><td>OFJ</td><td>ORC</td><td>ORT</td><td>MVR</td><td>MTR</td><td>DK</td><td>CT</td><td>IZN</td><td>NA</td>";
     $table .= "</tr>";
-
-
+    $table .= "</thead>";
+    $table .= "<tbody id='tabelAbsensiBody'>";
     foreach($pegawais as $pegawai)
       {
         $table .= "<tr>";
@@ -553,26 +555,50 @@ public function index(){
         $table .= "<td>".$count["NA"]."</td>";
         $table .= "</tr>";
       }
-    $table .= "</table>";
+    $table .= "</tbody></table>";
     return $table;
   }
 
   public function saveRekapAbsen(){
 
+    $project = $this->input->post('project');
+    $bulan = $this->input->post('bulan');
+    $tahun = $this->input->post('tahun');
+    $approvalStatus = $this->RekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($bulan,$tahun,$project);
+    
+    if(count($approvalStatus) > 0){
+      $lastStatus = $approvalStatus[0]["status"];
+      
+      if(($lastStatus >= APPROVAL_STATUS['APPROVED_BY_ADMINLOKASI'] && $this->session->userdata('role') == 'adminlokasi') || 
+      (($lastStatus == APPROVAL_STATUS['APPROVED_BY_KOORDINATOR'] || $lastStatus != APPROVAL_STATUS['REJECTED_BY_USER'] || $lastStatus == APPROVAL_STATUS['APPROVED_BY_USER']) && $this->session->userdata('role') == 'koordinator')){
+        
+        echo(json_response(400, 'Data tidak tersimpan karena sudah di approve.'));
+        return header("HTTP/1.0 400");
+      }
+
+    }
+    
     $workStatuses = json_decode($this->input->post('data'), true);
     $arraytoInsert = array();
     $arraytoUpdate = array();
     $updated_by = $this->session->userdata('email');
+
+    $this->load->helper('date');
+    date_default_timezone_set('Asia/Jakarta');
+    $datestring = '%Y-%m-%d %h:%i:%s';
+    $time = time();
+    $updated_at = mdate($datestring, $time);
 
     foreach($workStatuses as $key => $value){
       $no_pekerja = $key;
         foreach($value as $key2 => $value2){
           $arr = array(
                 "no_pekerja" => $no_pekerja,
-                "status" => $value2,
+                "status" => $workStatuses[$no_pekerja][$key2]["status"],
+                "old_status" => $workStatuses[$no_pekerja][$key2]["old_status"],
                 "date" => $key2,
                 'updated_by' => $updated_by,
-                'updated_at' => date("Y-m-d H:i:s")
+                'updated_at' => $updated_at
             );
             if($this->OverrideAbsensi_model->getCountOverrideStatusByDateAndNoPekerja($key2,$no_pekerja)){
               array_push($arraytoUpdate,$arr);
@@ -581,15 +607,16 @@ public function index(){
             }
         };
     };
+   
     if(count($arraytoInsert)){
       $this->OverrideAbsensi_model->addBatchOverrideAbsensiBatch($arraytoInsert);
     };
+   
 
     foreach( $arraytoUpdate as $arrtoUpdate ){
-      $this->OverrideAbsensi_model->updateByDateAndNoPekerja($arrtoUpdate["date"],$updated_by,$arrtoUpdate["no_pekerja"],$arrtoUpdate["status"]);
+      $this->OverrideAbsensi_model->updateByDateAndNoPekerja($arrtoUpdate["date"],$updated_by,$arrtoUpdate["no_pekerja"],$arrtoUpdate["status"],$arrtoUpdate["old_status"]);
     };
-    
-    return header("HTTP/1.0 200");
+
   }
   
   public function approveRekapAbsen(){
@@ -605,7 +632,7 @@ public function index(){
     $approvalStatus = $this->RekapAbsensiApproval_model->getRekapAbsensiApprovalByMonthYearAndProjectNickname($monthPosted,$yearPosted,$project_nickname);
     
     if(count($approvalStatus)>0){
-      if($approvalStatus[0]["status"] >= APPROVAL_STATUS['APPROVED_BY_ADMIN_LOKASI']){
+      if($approvalStatus[0]["status"] >= APPROVAL_STATUS['APPROVED_BY_ADMINLOKASI']){
         if($this->session->userdata('role') == 'adminlokasi'||$this->session->userdata('role') == 'admin' ){
           echo(json_response(400, 'Sudah di approve'));
           return header("HTTP/1.0 400");
@@ -633,7 +660,7 @@ public function index(){
       $notes = "-";
     }
     if($this->session->userdata('role') == 'adminlokasi' || $this->session->userdata('role') == 'admin'){
-      $status = APPROVAL_STATUS['APPROVED_BY_ADMIN_LOKASI'];
+      $status = APPROVAL_STATUS['APPROVED_BY_ADMINLOKASI'];
     }elseif($this->session->userdata('role') == 'koordinator'){
       $status = APPROVAL_STATUS['APPROVED_BY_KOORDINATOR'];
     }elseif($this->session->userdata('role') == 'user'){
@@ -672,7 +699,7 @@ public function index(){
           $this->RekapAbsensiApproval_model->addRekapAbsensiApproval($project_nickname,$monthNow,$yearNow,$approved_by,$notes,$status);
         }
         echo(json_encode(array(
-          "status" => "REJECTED_BY_USER",
+          "status" => "REJECTED BY USER",
           "notes" => $notes
         )));
         return header("HTTP/1.0 200");

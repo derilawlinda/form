@@ -6,33 +6,64 @@ class RekapAbsensiApproval_model extends CI_Model
 
     public function addRekapAbsensiApproval($project_nickname,$bulan,$tahun,$approved_by,$notes,$status)
     {
-
+        $this->load->helper('date');
+        date_default_timezone_set('Asia/Jakarta');
+        $datestring = '%Y-%m-%d %h:%i:%s';
+        $time = time();
+        $approved_at = mdate($datestring, $time);
         $data = [
             'project_nickname' => $project_nickname,
             'bulan' => $bulan,
             'tahun' => $tahun,
             'approved_by' => $approved_by,
-            'approved_at' => date("Y-m-d H:i:s"),
+            'approved_at' => $approved_at,
             'is_last_approved_by_system' => 0,
             'notes' => $notes,
             'status' => $status
 
         ];
+
+        //logging
+        $this->load->model('RekapAbsensiApprovalHistory_model');
+        $this->RekapAbsensiApprovalHistory_model->addRekapAbsensiApprovalHistory($project_nickname,$bulan,$tahun,$approved_by,$notes,"-",$status,"CREATE");
+        
         return $this->db->insert('rekap_absensi_approval', $data);
   
     }
 
     public function updateRekapAbsensiApproval($project_nickname,$bulan,$tahun,$approved_by,$notes,$status)
     {
+        $lastStatus = $this->getRekapAbsensiApprovalByMonthYearAndProjectNickname($bulan,$tahun,$project_nickname);
+        $this->load->helper('date');
+        date_default_timezone_set('Asia/Jakarta');
+        $datestring = '%Y-%m-%d %h:%i:%s';
+        $time = time();
+        $approved_at = mdate($datestring, $time);
 
+        $this->load->model('RekapAbsensiApprovalHistory_model');
         $this->db->set('approved_by', $approved_by);
+        $this->db->set('approved_at', $approved_at);
         $this->db->set('status', $status);
-        $this->db->set('approved_at', date("Y-m-d H:i:s"));
+        $this->db->set('notes', $notes);
         $this->db->where('bulan', $bulan);
         $this->db->where('tahun', $tahun);
         $this->db->where('project_nickname', $project_nickname);
-        
-        return $this->db->update('rekap_absensi_approval');
+
+       
+        if($this->db->update('rekap_absensi_approval')){
+             //logging
+            $this->load->model('RekapAbsensiApprovalHistory_model');
+            if(count($lastStatus) > 0){
+                $status_from = $lastStatus[0]["status"];
+            }else{
+                $status_from = "-";
+            }
+            $status_to = $status;
+            return $this->RekapAbsensiApprovalHistory_model->addRekapAbsensiApprovalHistory($project_nickname,$bulan,$tahun,$approved_by,$notes,$status_from,$status_to,"UPDATE");
+            
+        }else {
+            return false;
+        }
   
     }
 

@@ -86,7 +86,7 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 define('SITE_NAME', 'Form Pekerja');
 
 define('APPROVAL_STATUS', array(
-    'APPROVED_BY_ADMIN_LOKASI' => 1,
+    'APPROVED_BY_ADMINLOKASI' => 1,
     'APPROVED_BY_KOORDINATOR' => 2,
     'APPROVED_BY_USER' => 3,
     'REJECTED_BY_USER' => 4,
