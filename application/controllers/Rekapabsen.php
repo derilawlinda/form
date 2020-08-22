@@ -432,6 +432,7 @@ public function index(){
         $table .= "<td>".$pegawai["no_pekerja"]."</td>";
         $table .= "<td>".$pegawai["nama_pekerja"]."</td>";
         $table .= "<td>".$pegawai["jabatan"]."</td>";
+        $count = array();
         $count["OFT"] = 0;
         $count["OFJ"] = 0;
         $count["ORC"] = 0;
@@ -443,6 +444,7 @@ public function index(){
         $count["IZN"] = 0;
         $count["NA"] = 0;
         foreach ($tanggalArray as $x) {
+          $statusfound = false;
           if($x >20 && $x<=$lastDayLastMonth){
             if($bulanNumber == 0){
               $tahunLalu = $tahun - 1;
@@ -457,9 +459,10 @@ public function index(){
           $overRideArray = $this->OverrideAbsensi_model->getOverrideStatusByDateAndNoPekerja($thisDate,$pegawai["no_pekerja"]);
           $numOfWeekWorking = $this->weekDifference($pegawai["tgl_masuk"],$thisDate,'%a');
           if(strtotime($pegawai["tgl_masuk"]) > strtotime($thisDate)){
-            $count["NA"] = 0;
+            $count["NA"] += 1;
             $table .= "<td data-field='work_status' data-fill-color='FFFFFFFF' style='background-color:white;'>NA</td>";
           }else{
+
             if ( $pegawai["roster"] == 21 ){
               if(count($overRideArray) > 0){
                 $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$overRideArray[0]["status"]]."' style='background-color:#".$RGB[$overRideArray[0]["status"]].";'>".$overRideArray[0]["status"]."</td>";
@@ -469,18 +472,39 @@ public function index(){
                   $count["OFT"] += 1;                
                   $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
               }else{
+
                 if($this->Absen_model->getCountAbsenByNoPekAndTanggal($pegawai["no_pekerja"],$thisDate)){
-                  foreach($projectStatuses as $projectStatus){
-                    if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
-                          $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
-                          $count[$projectStatus["project_status"]] += 1;
-                        }else{
-                          $count["NA"] += 1;
-                        }
+                  if(count($projectStatuses)){
+                    foreach($projectStatuses as $projectStatus){
+                      if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                            $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
+                            $count[$projectStatus["project_status"]] += 1;
+                            $statusfound = true;
+                          }
+                    }
+                    if(!$statusfound){
+                      $count["NA"] += 1;
+                    }
+                  }else{
+                    $count["NA"] += 1;
                   }
                 }else{
-                  $count["OFT"] += 1;                
-                  $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                  if(count($projectStatuses)){
+                    foreach($projectStatuses as $projectStatus){
+                      if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                          $count["OFT"] += 1;                
+                          $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                          $statusfound = true;
+                        }
+                    }
+                    if(!$statusfound){
+                      $count["NA"] += 1; 
+                    }
+                  }else{
+                    $count["NA"] += 1; 
+                  }
+                  
+                  
                 }
                 
               }
@@ -507,13 +531,23 @@ public function index(){
                         if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                           $count[$projectStatus["project_status"]] += 1;
                           $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
-                        }else{
-                          $count["NA"] += 1;
+                          $statusfound = true;
                         }
                       }
+                      if(!$statusfound){
+                        $count["NA"] += 1;
+                      }
                     }else{
-                      $count["OFT"] += 1;             
-                      $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                      foreach($projectStatuses as $projectStatus){
+                        if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                            $count["OFT"] += 1;                
+                            $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                            $statusfound = true;
+                          }
+                      }
+                      if(!$statusfound){
+                        $count["NA"] += 1; 
+                      }
                     }
                       
                   }
@@ -527,13 +561,23 @@ public function index(){
                         if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                           $count[$projectStatus["project_status"]] += 1;
                           $cell = "<td data-field='work_status' data-fill-color='FF".$RGB[$projectStatus["project_status"]]."' style='background-color:#".$RGB[$projectStatus["project_status"]].";'>".$projectStatus["project_status"]."</td>";
-                        }else{
-                          $count["NA"] += 1;
+                          $statusfound = true;
                         }
                       }
+                      if(!$statusfound){
+                        $count["NA"] += 1; 
+                      }
                     }else{
-                      $count["OFT"] += 1;                 
-                      $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                      foreach($projectStatuses as $projectStatus){
+                        if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                            $count["OFT"] += 1;                
+                            $cell = "<td data-field='work_status' data-fill-color='FFFF0000' style='background-color:red;'>OFT</td>";
+                            $statusfound = true;
+                          }
+                      }
+                      if(!$statusfound){
+                        $count["NA"] += 1; 
+                      }
                     }
                   }
                 }

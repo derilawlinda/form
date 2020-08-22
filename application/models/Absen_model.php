@@ -448,6 +448,7 @@ class Absen_model extends CI_Model {
     $count["NA"] = 0;
     foreach($pegawais as $pegawai){
         foreach ($tanggalArray as $x) {
+            $statusfound = false;
             if($x >20 && $x<=$lastDayLastMonth){
                 if($bulanNumber == 0){
                     $tahunLalu = $tahun - 1;
@@ -477,13 +478,29 @@ class Absen_model extends CI_Model {
                                     foreach($projectStatuses as $projectStatus){
                                         if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                                             $count[$projectStatus["project_status"]] += 1;
+                                            $statusfound = true;
                                         }
+                                    }
+                                    if(!$statusfound){
+                                        $count["NA"] += 1;
                                     }
                                 }else{
                                     $count["NA"] += 1;
                                 }
                             }else{
-                                $count["OFT"] += 1;   
+                                if(count($projectStatuses) > 0){
+                                    foreach($projectStatuses as $projectStatus){
+                                        if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                                            $count["OFT"] += 1;
+                                            $statusfound = true;
+                                        }
+                                    }
+                                    if(!$statusfound){
+                                        $count["NA"] += 1;
+                                    }
+                                }else{
+                                    $count["NA"] += 1;
+                                }  
                             }
                         }
 
@@ -502,13 +519,29 @@ class Absen_model extends CI_Model {
                                         foreach($projectStatuses as $projectStatus){
                                             if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                                                 $count[$projectStatus["project_status"]] += 1;
+                                                $statusfound = true;
                                             }
+                                        }
+                                        if(!$statusfound){
+                                            $count["NA"] += 1;
                                         }
                                     }else{
                                         $count["NA"] += 1;
                                     }
                                 }else{
-                                    $count["OFT"] += 1;
+                                    if(count($projectStatuses) > 0){
+                                        foreach($projectStatuses as $projectStatus){
+                                            if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                                                $count["OFT"] += 1;
+                                                $statusfound = true;
+                                            }
+                                        }
+                                        if(!$statusfound){
+                                            $count["NA"] += 1;
+                                        }
+                                    }else{
+                                        $count["NA"] += 1;
+                                    }  
                                 }
                             }
                         }
@@ -521,13 +554,29 @@ class Absen_model extends CI_Model {
                                         foreach($projectStatuses as $projectStatus){
                                             if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
                                                 $count[$projectStatus["project_status"]] += 1;
+                                                $statusfound = true;
                                             }
+                                        }
+                                        if(!$statusfound){
+                                            $count["NA"] += 1;
                                         }
                                     }else{
                                         $count["NA"] += 1;
                                     }
                                 }else{
-                                    $count["OFT"] += 1;
+                                    if(count($projectStatuses) > 0){
+                                        foreach($projectStatuses as $projectStatus){
+                                            if(strtotime($projectStatus["start_date"]) <=  strtotime($thisDate) && strtotime($projectStatus["end_date"]) >= strtotime($thisDate)){
+                                                $count["OFT"] += 1;
+                                                $statusfound = true;
+                                            }
+                                        }
+                                        if(!$statusfound){
+                                            $count["NA"] += 1;
+                                        }
+                                    }else{
+                                        $count["NA"] += 1;
+                                    }  
                                 }
                                 
                             }
