@@ -14,8 +14,10 @@
                             <th>Tanggal Selesai</th>
                         </tr>
                     </thead>
-                    <?php if(count($project_schedules)) : 
-                        $i=0;
+                    <?php
+                    $i = 0;
+                    if(count($project_schedules)) : 
+                        
                         foreach ($project_schedules as $project_schedule) {
 
                     ?>
@@ -57,7 +59,7 @@
                         <tr>  
                             <td style="display:none;"></td>
                             <td>
-                                <select name="status_lokasi" class="form-control">
+                                <select name="status_lokasi" class="form-control is-invalid">
                                         <option value="">Status</option>
                                         <option value="OFF">OFF Duty (OFF) </option>
                                         <option value="OFJ">OFF dalam Perjalan (Crew Non Lokal) (OFJ)</option>
@@ -71,11 +73,11 @@
                                 </select>
                                 <span class="invalid-feedback"> Required </ span>
                             </td>  
-                            <td><input type="date" name="statusStartDate" class="form-control status-list" required />
-                            <div class="invalid-feedback">Tidak bisa lebih besar dari tanggal akhir</div>
+                            <td><input type="date" name="statusStartDate" class="form-control status-list is-invalid" required />
+                            <div class="invalid-feedback">Requred</div>
                             </td> 
-                            <td><input type="date" name="statusEndDate" class="form-control status-list" required />
-                            <div class="invalid-feedback">Tidak bisa lebih kecil dari tanggal mulai</div>
+                            <td><input type="date" name="statusEndDate" class="form-control status-list is-invalid" required />
+                            <div class="invalid-feedback">Required</div>
                             </td> 
                             <td><button type="button" name="add" id="add" class="btn-sm btn-success"><span class="fa fa-plus" aria-hidden="true"></span></button>
                             <span class="badge badge-secondary badge-danger" style="display:none;" id="danger0">Overlapping Date</span>
